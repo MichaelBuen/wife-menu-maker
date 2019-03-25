@@ -5,7 +5,6 @@ import {
     ScrollView,
     StyleSheet,
     Text,
-    TouchableOpacity,
     View,
     SafeAreaView,
     FlatList,
@@ -13,12 +12,14 @@ import {
 } from 'react-native';
 
 
+import {FloatingLabelInput} from "./FloatingLabelInput";
+
+
 import produce from 'immer';
 
 
 import {
     List,
-    ListItem,
 } from 'react-native-elements';
 
 import {WebBrowser} from 'expo';
@@ -34,6 +35,7 @@ export default class HomeScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            food: 'java',
             data: [
                 {
                     name: {
@@ -42,7 +44,8 @@ export default class HomeScreen extends React.Component {
                     picture: {
                         thumbnail: null
                     },
-                    quantity: 0
+                    quantity: 0,
+                    quantityText: '0'
                 },
                 {
                     name: {
@@ -51,48 +54,73 @@ export default class HomeScreen extends React.Component {
                     picture: {
                         thumbnail: null
                     },
-                    quantity: 0
+                    quantity: 0,
+                    quantityText: '0'
                 }
             ]
         };
 
         this.increaseOrderQuantity = this.increaseOrderQuantity.bind(this);
+        this.decreaseOrderQuantity = this.decreaseOrderQuantity.bind(this);
+        this.changeQuantity = this.changeQuantity.bind(this);
     }
 
     increaseOrderQuantity(item) {
-        var itemIndex = this.state.data.indexOf(item);
+        const itemIndex = this.state.data.indexOf(item);
 
-        this.setState(({data}) => ({
-            data: [
-                ...data.slice(0, itemIndex),
-                {
-                    ...item,
-                    quantity: item.quantity + 1
-                },
-                ...data.slice(itemIndex + 1)
-            ]
-        }));
+        // this.setState(({data}) => ({
+        //     data: [
+        //         ...data.slice(0, itemIndex),
+        //         {
+        //             ...item,
+        //             quantity: item.quantity + 1
+        //         },
+        //         ...data.slice(itemIndex + 1)
+        //     ]
+        // }));
 
         // this.setState(produce(draft => {
         //     draft.data[itemIndex].quantity++;
         // }));
+
+        this.setState(produce(draft => {
+            const itemToChange = draft.data[itemIndex];
+
+            ++itemToChange.quantity;
+            itemToChange.quantityText = itemToChange.quantity.toString();
+        }));
     }
 
     decreaseOrderQuantity(item) {
-        var itemIndex = this.state.data.indexOf(item);
+        const itemIndex = this.state.data.indexOf(item);
 
         this.setState(produce(draft => {
-            draft.data[itemIndex].quantity--;
+            const itemToChange = draft.data[itemIndex];
+
+            --itemToChange.quantity;
+            itemToChange.quantityText = itemToChange.quantity.toString();
+        }));
+    }
+
+
+    changeQuantity(item, text) {
+        console.log('blah');
+        console.log(text);
+
+        const itemIndex = this.state.data.indexOf(item);
+
+        this.setState(produce(draft => {
+            const itemToChange = draft.data[itemIndex];
+            itemToChange.quantityText = text || '';
+            itemToChange.quantity = parseInt(text) || 0;
         }));
     }
 
 
     render() {
         return (
-
             <SafeAreaView style={styles.container}>
                 <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-
                     <FlatList
                         data={this.state.data}
                         renderItem={({item}) => (
@@ -128,25 +156,31 @@ export default class HomeScreen extends React.Component {
                                             Add one more
                                             Less one
                                     */}
-                                    <View style={{flexDirection: 'row'}}>
+                                    <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
                                         <Button
                                             onPress={() => this.increaseOrderQuantity(item)}
-                                            title={item.quantity === 0 ? 'Order': 'Add one more'}                                        />
+                                            title={item.quantity === 0 ? 'Order' : 'Add one more'}/>
                                         {item.quantity > 0 &&
-                                            <Button
-                                                onPress={() => this.decreaseOrderQuantity(item)}
-                                                title={item.quantity > 1 ? 'Less one' : 'Cancel Order'}
-                                            />
-                                        }
+                                        <Button
+                                            onPress={() => this.decreaseOrderQuantity(item)}
+                                            title={item.quantity > 1 ? 'Less one' : 'Cancel this'}
+                                        />}
                                     </View>
 
-                                    <Text>{item.quantity}</Text>
+                                    {(item.quantity > 0 || item.quantityText === '') &&
+                                    <View>
+                                        <FloatingLabelInput
+                                            label="Quantity"
+                                            value={item.quantityText}
+                                            onChangeText={text => this.changeQuantity(item, text)}
+                                        />
+                                    </View>
+                                    }
                                 </View>
                             </>
                         )}
                         keyExtractor={item => item.name.first}
                     />
-
                 </ScrollView>
 
                 <View style={styles.tabBarInfoContainer}>
@@ -157,6 +191,7 @@ export default class HomeScreen extends React.Component {
                     </View>
                 </View>
             </SafeAreaView>
+
         );
     }
 
@@ -207,6 +242,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     contentContainer: {
+        flex: 1,
         paddingTop: 30,
     },
     welcomeContainer: {
