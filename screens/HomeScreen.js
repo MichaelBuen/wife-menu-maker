@@ -31,6 +31,9 @@ export default class HomeScreen extends React.Component {
         header: null,
     };
 
+    static colors = ['#CCCCFF', '#CCFFCC'];
+
+    recentlyUpdatedIndex = 0;
 
     constructor(props) {
         super(props);
@@ -108,12 +111,20 @@ export default class HomeScreen extends React.Component {
         //     draft.data[itemIndex].quantity++;
         // }));
 
+
         this.setState(produce(draft => {
             const itemToChange = draft.data[itemIndex];
 
             ++itemToChange.quantity;
             itemToChange.quantityText = itemToChange.quantity.toString();
+
+            // if (itemIndex === this.state.data.length - 1) {
+            //     console.log('end');
+            //     this.refs.flatList.scrollToEnd();
+            // }
         }));
+
+        this.recentlyUpdatedIndex = itemIndex;
     }
 
     decreaseOrderQuantity(item) {
@@ -125,6 +136,8 @@ export default class HomeScreen extends React.Component {
             --itemToChange.quantity;
             itemToChange.quantityText = itemToChange.quantity.toString();
         }));
+
+        this.recentlyUpdatedIndex = itemIndex;
     }
 
 
@@ -139,6 +152,12 @@ export default class HomeScreen extends React.Component {
             itemToChange.quantityText = text || '';
             itemToChange.quantity = parseInt(text) || 0;
         }));
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (this.recentlyUpdatedIndex === this.state.data.length - 1) {
+            this.refs.flatList.scrollToEnd();
+        }
     }
 
 
@@ -201,37 +220,39 @@ export default class HomeScreen extends React.Component {
                     style={styles.container}
                     behavior="padding"
                 >
+                    <FlatList
+                        ref='flatList'
+                        onContentSizeChange={() => {
+                                if (this.recentlyUpdatedIndex === this.state.data.length - 1) {
+                                    this.refs.flatList.scrollToEnd();
+                                }
+                            }
+                        }
+                        data={this.state.data}
+                        renderItem={({item, index}) => (
+                            <>
+                                <View
+                                    style={{
+                                        ...styles.item,
+                                        backgroundColor: HomeScreen.colors[index % 2]
+                                    }}
+                                    keyExtractor={item => item.name.first}
+                                >
+                                    <Text>{item.name.first}</Text>
+                                    {/*<Image*/}
+                                    {/*source={{*/}
+                                    {/*uri: "https://facebook.github.io/react-native/img/favicon.png",*/}
+                                    {/*// width: 64,*/}
+                                    {/*// height: 64*/}
+                                    {/*width: 350,*/}
+                                    {/*height: 350,*/}
+                                    {/*}}*/}
+                                    {/*resizeMethod='scale'*/}
+                                    {/*/>*/}
 
-                    <ScrollView
+                                    <Image source={require('../assets/images/robot-dev.png')}/>
 
-                        style={styles.container}
-
-                        resetScrollToCoords={{x: 0, y: 0}}
-
-                        contentContainerStyle={styles.contentContainer}
-                        scrollEnabled={false}
-                    >
-
-                        <FlatList
-                            data={this.state.data}
-                            renderItem={({item}) => (
-                                <>
-                                    <View style={styles.item} keyExtractor={item => item.name.first}>
-                                        <Text>{item.name.first}</Text>
-                                        {/*<Image*/}
-                                        {/*source={{*/}
-                                        {/*uri: "https://facebook.github.io/react-native/img/favicon.png",*/}
-                                        {/*// width: 64,*/}
-                                        {/*// height: 64*/}
-                                        {/*width: 350,*/}
-                                        {/*height: 350,*/}
-                                        {/*}}*/}
-                                        {/*resizeMethod='scale'*/}
-                                        {/*/>*/}
-
-                                        <Image source={require('../assets/images/robot-dev.png')}/>
-
-                                        {/*
+                                    {/*
                                         Initial quantity: 0
                                             Order
                                         Quantity: 1
@@ -241,38 +262,34 @@ export default class HomeScreen extends React.Component {
                                             Add one more
                                             Less one
                                     */}
-                                        <View style={{flexDirection: 'row', flexWrap: 'wrap', padding: 2}}>
-                                            <Button
-                                                onPress={() => this.increaseOrderQuantity(item)}
-                                                title={item.quantity === 0 ? 'Order' : 'Add one more'}/>
-                                            <View style={{padding: 5}}/>
-                                            {item.quantity > 0 &&
-                                            <Button
-                                                onPress={() => this.decreaseOrderQuantity(item)}
-                                                title={item.quantity > 1 ? 'Less one' : 'Cancel this'}
-                                            />}
-                                        </View>
-
-                                        {(item.quantity > 0 || item.focused) &&
-                                        <View>
-                                            <FloatingLabelInput
-                                                label={item.name.first + " Quantity"}
-                                                value={item.quantityText}
-                                                onChangeText={text => this.changeQuantity(item, text)}
-                                                onFocus={() => this.handleFocus(item)}
-                                                onBlur={() => this.handleBlur(item)}
-                                            />
-                                        </View>
-                                        }
+                                    <View style={{flexDirection: 'row', flexWrap: 'wrap', padding: 5}}>
+                                        <Button
+                                            onPress={() => this.increaseOrderQuantity(item)}
+                                            title={item.quantity === 0 ? 'Order' : 'Add one more'}/>
+                                        <View style={{padding: 5}}/>
+                                        {item.quantity > 0 &&
+                                        <Button
+                                            onPress={() => this.decreaseOrderQuantity(item)}
+                                            title={item.quantity > 1 ? 'Less one' : 'Cancel this'}
+                                        />}
                                     </View>
-                                </>
-                            )}
-                            keyExtractor={item => item.name.first}
-                        />
 
-
-                    </ScrollView>
-                    <View style={{height: 60}}/>
+                                    {(item.quantity > 0 || item.focused) &&
+                                    <View>
+                                        <FloatingLabelInput
+                                            label={item.name.first + " Quantity"}
+                                            value={item.quantityText}
+                                            onChangeText={text => this.changeQuantity(item, text)}
+                                            onFocus={() => this.handleFocus(item)}
+                                            onBlur={() => this.handleBlur(item)}
+                                        />
+                                    </View>
+                                    }
+                                </View>
+                            </>
+                        )}
+                        keyExtractor={item => item.name.first}
+                    />
                 </KeyboardAvoidingView>
 
 
@@ -328,6 +345,7 @@ export default class HomeScreen extends React.Component {
 
 const styles = StyleSheet.create({
     safeAreaViewContainer: {
+        paddingTop: 25,
         flex: 1,
         backgroundColor: '#fff',
     },
@@ -419,7 +437,7 @@ const styles = StyleSheet.create({
         color: '#2e78b7',
     },
     item: {
-        padding: 10,
+        padding: 3,
         fontSize: 18,
         height: null,
     },
