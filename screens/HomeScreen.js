@@ -9,7 +9,11 @@ import {
     View,
     SafeAreaView,
     FlatList,
+    Button,
 } from 'react-native';
+
+
+import produce from 'immer';
 
 
 import {
@@ -37,7 +41,8 @@ export default class HomeScreen extends React.Component {
                     },
                     picture: {
                         thumbnail: null
-                    }
+                    },
+                    quantity: 0
                 },
                 {
                     name: {
@@ -45,10 +50,40 @@ export default class HomeScreen extends React.Component {
                     },
                     picture: {
                         thumbnail: null
-                    }
+                    },
+                    quantity: 0
                 }
             ]
         };
+
+        this.increaseOrderQuantity = this.increaseOrderQuantity.bind(this);
+    }
+
+    increaseOrderQuantity(item) {
+        var itemIndex = this.state.data.indexOf(item);
+
+        this.setState(({data}) => ({
+            data: [
+                ...data.slice(0, itemIndex),
+                {
+                    ...item,
+                    quantity: item.quantity + 1
+                },
+                ...data.slice(itemIndex + 1)
+            ]
+        }));
+
+        // this.setState(produce(draft => {
+        //     draft.data[itemIndex].quantity++;
+        // }));
+    }
+
+    decreaseOrderQuantity(item) {
+        var itemIndex = this.state.data.indexOf(item);
+
+        this.setState(produce(draft => {
+            draft.data[itemIndex].quantity--;
+        }));
     }
 
 
@@ -70,7 +105,7 @@ export default class HomeScreen extends React.Component {
                                 {/*containerStyle={{borderBottomWidth: 0}}*/}
                                 {/*/>*/}
 
-                                <View style={styles.item}>
+                                <View style={styles.item} keyExtractor={item => item.name.first}>
                                     <Text>{item.name.first}</Text>
                                     <Image
                                         source={{
@@ -82,6 +117,30 @@ export default class HomeScreen extends React.Component {
                                         }}
                                         resizeMethod='scale'
                                     />
+
+                                    {/*
+                                        Initial quantity: 0
+                                            Order
+                                        Quantity: 1
+                                            Add one more
+                                            Cancel Order
+                                        Quantity: >1
+                                            Add one more
+                                            Less one
+                                    */}
+                                    <View style={{flexDirection: 'row'}}>
+                                        <Button
+                                            onPress={() => this.increaseOrderQuantity(item)}
+                                            title={item.quantity === 0 ? 'Order': 'Add one more'}                                        />
+                                        {item.quantity > 0 &&
+                                            <Button
+                                                onPress={() => this.decreaseOrderQuantity(item)}
+                                                title={item.quantity > 1 ? 'Less one' : 'Cancel Order'}
+                                            />
+                                        }
+                                    </View>
+
+                                    <Text>{item.quantity}</Text>
                                 </View>
                             </>
                         )}
