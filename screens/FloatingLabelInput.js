@@ -17,8 +17,19 @@ export class FloatingLabelInput extends React.Component {
         this._animatedIsFocused = new Animated.Value(this.props.value === '' ? 0 : 1);
     }
 
-    handleFocus = () => this.setState({ isFocused: true });
-    handleBlur = () => this.setState({ isFocused: false });
+    handleFocus = () => {
+        this.setState({isFocused: true});
+        if (this.props.onFocus) {
+            this.props.onFocus();
+        }
+    };
+
+    handleBlur = () => {
+        this.setState({isFocused: false});
+        if (this.props.onBlur) {
+            this.props.onBlur();
+        }
+    };
 
     componentDidUpdate() {
         Animated.timing(this._animatedIsFocused, {
@@ -28,7 +39,7 @@ export class FloatingLabelInput extends React.Component {
     }
 
     render() {
-        const { label, ...props } = this.props;
+        const {label, ...props} = this.props;
         const labelStyle = {
             position: 'absolute',
             left: 0,
@@ -46,13 +57,13 @@ export class FloatingLabelInput extends React.Component {
             }),
         };
         return (
-            <View style={{ paddingTop: 18 }}>
+            <View style={{paddingTop: 18}}>
                 <Animated.Text style={labelStyle}>
                     {label}
                 </Animated.Text>
                 <TextInput
                     {...props}
-                    style={{ height: 26, fontSize: 20, color: '#000', borderBottomWidth: 1, borderBottomColor: '#555' }}
+                    style={{height: 26, fontSize: 20, color: '#000', borderBottomWidth: 1, borderBottomColor: '#555'}}
                     onFocus={this.handleFocus}
                     onBlur={this.handleBlur}
                     blurOnSubmit

@@ -39,23 +39,47 @@ export default class HomeScreen extends React.Component {
             data: [
                 {
                     name: {
-                        first: 'Michael'
+                        first: 'B1'
                     },
                     picture: {
                         thumbnail: null
                     },
                     quantity: 0,
-                    quantityText: '0'
+                    quantityText: '0',
+                    focused: false
                 },
                 {
                     name: {
-                        first: 'Great'
+                        first: 'B5'
                     },
                     picture: {
                         thumbnail: null
                     },
                     quantity: 0,
-                    quantityText: '0'
+                    quantityText: '0',
+                    focused: false
+                },
+                {
+                    name: {
+                        first: 'B2'
+                    },
+                    picture: {
+                        thumbnail: null
+                    },
+                    quantity: 0,
+                    quantityText: '0',
+                    focused: false
+                },
+                {
+                    name: {
+                        first: 'B4'
+                    },
+                    picture: {
+                        thumbnail: null
+                    },
+                    quantity: 0,
+                    quantityText: '0',
+                    focused: false
                 }
             ]
         };
@@ -117,34 +141,53 @@ export default class HomeScreen extends React.Component {
     }
 
 
+    handleFocus(item) {
+        const itemIndex = this.state.data.indexOf(item);
+
+        this.setState(produce(draft => {
+            const itemToChange = draft.data[itemIndex];
+            itemToChange.focused = true;
+        }));
+
+        console.log('focusing');
+    }
+
+    handleBlur(item) {
+        const itemIndex = this.state.data.indexOf(item);
+
+        this.setState(produce(draft => {
+            const itemToChange = draft.data[itemIndex];
+            itemToChange.focused = false;
+        }));
+    }
+
+
     render() {
         return (
-            <SafeAreaView style={styles.container}>
-                <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+            <SafeAreaView style={styles.safeAreaViewContainer}>
+                <ScrollView
+                    style={styles.container}
+                    contentContainerStyle={styles.contentContainer}
+                    scrollEnabled={true}
+                >
                     <FlatList
                         data={this.state.data}
                         renderItem={({item}) => (
                             <>
-                                {/*<ListItem*/}
-                                {/*roundAvatar*/}
-                                {/*title={`${item.name.first} ${item.name.last}`}*/}
-                                {/*subtitle={item.email}*/}
-                                {/*// avatar={{uri: item.picture.thumbnail}}*/}
-                                {/*containerStyle={{borderBottomWidth: 0}}*/}
-                                {/*/>*/}
-
                                 <View style={styles.item} keyExtractor={item => item.name.first}>
                                     <Text>{item.name.first}</Text>
-                                    <Image
-                                        source={{
-                                            uri: "https://facebook.github.io/react-native/img/favicon.png",
-                                            // width: 64,
-                                            // height: 64
-                                            width: 350,
-                                            height: 350,
-                                        }}
-                                        resizeMethod='scale'
-                                    />
+                                    {/*<Image*/}
+                                        {/*source={{*/}
+                                            {/*uri: "https://facebook.github.io/react-native/img/favicon.png",*/}
+                                            {/*// width: 64,*/}
+                                            {/*// height: 64*/}
+                                            {/*width: 350,*/}
+                                            {/*height: 350,*/}
+                                        {/*}}*/}
+                                        {/*resizeMethod='scale'*/}
+                                    {/*/>*/}
+
+                                    <Image source={require('../assets/images/robot-dev.png')}/>
 
                                     {/*
                                         Initial quantity: 0
@@ -167,12 +210,14 @@ export default class HomeScreen extends React.Component {
                                         />}
                                     </View>
 
-                                    {(item.quantity > 0 || item.quantityText === '') &&
+                                    {(item.quantity > 0 || item.focused) &&
                                     <View>
                                         <FloatingLabelInput
-                                            label="Quantity"
+                                            label={item.name.first + " Quantity"}
                                             value={item.quantityText}
                                             onChangeText={text => this.changeQuantity(item, text)}
+                                            onFocus={() => this.handleFocus(item)}
+                                            onBlur={() => this.handleBlur(item)}
                                         />
                                     </View>
                                     }
@@ -182,6 +227,8 @@ export default class HomeScreen extends React.Component {
                         keyExtractor={item => item.name.first}
                     />
                 </ScrollView>
+
+                <View style={{marginBottom: 120}}/>
 
                 <View style={styles.tabBarInfoContainer}>
                     <Text style={styles.tabBarInfoText}>This is a tab bar. You can edit it in:</Text>
@@ -230,6 +277,10 @@ export default class HomeScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
+    safeAreaViewContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
     container: {
         flex: 1,
         backgroundColor: '#fff',
