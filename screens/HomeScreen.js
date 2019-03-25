@@ -9,11 +9,11 @@ import {
     SafeAreaView,
     FlatList,
     Button,
+    Clipboard,
+    KeyboardAvoidingView,
 } from 'react-native';
 
-
 import {FloatingLabelInput} from "./FloatingLabelInput";
-
 
 import produce from 'immer';
 
@@ -87,6 +87,7 @@ export default class HomeScreen extends React.Component {
         this.increaseOrderQuantity = this.increaseOrderQuantity.bind(this);
         this.decreaseOrderQuantity = this.decreaseOrderQuantity.bind(this);
         this.changeQuantity = this.changeQuantity.bind(this);
+        this.sort = this.sort.bind(this);
     }
 
     increaseOrderQuantity(item) {
@@ -162,34 +163,75 @@ export default class HomeScreen extends React.Component {
     }
 
 
+    sort() {
+        // this.setState(produce(draft => {
+        //     const data = draft.data;
+        //     // draft.data = Enumerable.from(data).orderBy('$.name.first');
+        //     draft.data = data.sort((a, b) => {
+        //         if (a.name.first > b.name.first) {
+        //             return 1;
+        //         }
+        //         else if (a.name.first < b.name.first) {
+        //             return -1;
+        //         }
+        //
+        //         return 0;
+        //     })
+        // }));
+
+        const withOrdersList = [];
+
+        const withOrders = this.state.data.filter(food => food.quantity > 0);
+
+        for (const order of withOrders) {
+            withOrdersList.push(`${order.name.first}: ${order.quantity}`);
+        }
+
+
+        const ordersAsString = withOrdersList.join('\n');
+
+        Clipboard.setString(ordersAsString);
+    }
+
+
     render() {
         return (
             <SafeAreaView style={styles.safeAreaViewContainer}>
-                <ScrollView
+                <KeyboardAvoidingView
                     style={styles.container}
-                    contentContainerStyle={styles.contentContainer}
-                    scrollEnabled={true}
+                    behavior="padding"
                 >
-                    <FlatList
-                        data={this.state.data}
-                        renderItem={({item}) => (
-                            <>
-                                <View style={styles.item} keyExtractor={item => item.name.first}>
-                                    <Text>{item.name.first}</Text>
-                                    {/*<Image*/}
+
+                    <ScrollView
+
+                        style={styles.container}
+
+                        resetScrollToCoords={{x: 0, y: 0}}
+
+                        contentContainerStyle={styles.contentContainer}
+                        scrollEnabled={false}
+                    >
+
+                        <FlatList
+                            data={this.state.data}
+                            renderItem={({item}) => (
+                                <>
+                                    <View style={styles.item} keyExtractor={item => item.name.first}>
+                                        <Text>{item.name.first}</Text>
+                                        {/*<Image*/}
                                         {/*source={{*/}
-                                            {/*uri: "https://facebook.github.io/react-native/img/favicon.png",*/}
-                                            {/*// width: 64,*/}
-                                            {/*// height: 64*/}
-                                            {/*width: 350,*/}
-                                            {/*height: 350,*/}
+                                        {/*uri: "https://facebook.github.io/react-native/img/favicon.png",*/}
+                                        {/*// width: 64,*/}
+                                        {/*// height: 64*/}
+                                        {/*width: 350,*/}
+                                        {/*height: 350,*/}
                                         {/*}}*/}
                                         {/*resizeMethod='scale'*/}
-                                    {/*/>*/}
+                                        {/*/>*/}
 
-                                    <Image source={require('../assets/images/robot-dev.png')}/>
+                                        <Image source={require('../assets/images/robot-dev.png')}/>
 
-                                    {/*
+                                        {/*
                                         Initial quantity: 0
                                             Order
                                         Quantity: 1
@@ -199,39 +241,47 @@ export default class HomeScreen extends React.Component {
                                             Add one more
                                             Less one
                                     */}
-                                    <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-                                        <Button
-                                            onPress={() => this.increaseOrderQuantity(item)}
-                                            title={item.quantity === 0 ? 'Order' : 'Add one more'}/>
-                                        {item.quantity > 0 &&
-                                        <Button
-                                            onPress={() => this.decreaseOrderQuantity(item)}
-                                            title={item.quantity > 1 ? 'Less one' : 'Cancel this'}
-                                        />}
-                                    </View>
+                                        <View style={{flexDirection: 'row', flexWrap: 'wrap', padding: 2}}>
+                                            <Button
+                                                onPress={() => this.increaseOrderQuantity(item)}
+                                                title={item.quantity === 0 ? 'Order' : 'Add one more'}/>
+                                            <View style={{padding: 5}}/>
+                                            {item.quantity > 0 &&
+                                            <Button
+                                                onPress={() => this.decreaseOrderQuantity(item)}
+                                                title={item.quantity > 1 ? 'Less one' : 'Cancel this'}
+                                            />}
+                                        </View>
 
-                                    {(item.quantity > 0 || item.focused) &&
-                                    <View>
-                                        <FloatingLabelInput
-                                            label={item.name.first + " Quantity"}
-                                            value={item.quantityText}
-                                            onChangeText={text => this.changeQuantity(item, text)}
-                                            onFocus={() => this.handleFocus(item)}
-                                            onBlur={() => this.handleBlur(item)}
-                                        />
+                                        {(item.quantity > 0 || item.focused) &&
+                                        <View>
+                                            <FloatingLabelInput
+                                                label={item.name.first + " Quantity"}
+                                                value={item.quantityText}
+                                                onChangeText={text => this.changeQuantity(item, text)}
+                                                onFocus={() => this.handleFocus(item)}
+                                                onBlur={() => this.handleBlur(item)}
+                                            />
+                                        </View>
+                                        }
                                     </View>
-                                    }
-                                </View>
-                            </>
-                        )}
-                        keyExtractor={item => item.name.first}
-                    />
-                </ScrollView>
+                                </>
+                            )}
+                            keyExtractor={item => item.name.first}
+                        />
+
+
+                    </ScrollView>
+                    <View style={{height: 60}}/>
+                </KeyboardAvoidingView>
+
 
                 <View style={{marginBottom: 120}}/>
 
                 <View style={styles.tabBarInfoContainer}>
                     <Text style={styles.tabBarInfoText}>This is a tab bar. You can edit it in:</Text>
+
+                    <Button title={'Copy order to clipboard'} onPress={() => this.sort()}/>
 
                     <View style={[styles.codeHighlightContainer, styles.navigationFilename]}>
                         <MonoText style={styles.codeHighlightText}>navigation/MainTabNavigator.js</MonoText>
