@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Aunt Kitchen",
+    "name": "电脑",
     "slug": "aunt-kitchen",
     "privacy": "public",
     "sdkVersion": "32.0.0",
@@ -24,6 +24,13 @@
     ],
     "ios": {
       "supportsTablet": true
+    },
+    "description": "",
+    "android": {
+      "package": "com.kel.auntkitchen",
+      "versionCode": 1,
+      "permissions": [],
+      "icon": "./assets/images/icon.png"
     }
   }
 }

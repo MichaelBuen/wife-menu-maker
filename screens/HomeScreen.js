@@ -1,9 +1,6 @@
 import React from 'react';
 import {
     Image,
-    Platform,
-    ScrollView,
-    StyleSheet,
     Text,
     View,
     SafeAreaView,
@@ -16,6 +13,16 @@ import {
 import {FloatingLabelInput} from "./FloatingLabelInput";
 
 import produce from 'immer';
+
+
+import {styles} from "../styles";
+
+import beefBrocolli from '../assets/images/beef-brocolli-thumb.jpeg';
+import chaofanThumbnail from '../assets/images/chao-fan-thumbnail.jpg';
+import shrimpThumbnail from '../assets/images/shrimp-thumbnail.jpeg';
+import dumplingThumbnail from '../assets/images/dumpling-thumbnail.jpg';
+import fishThumbnail from '../assets/images/fish-thumbnail.jpeg';
+import beefSesame from '../assets/images/beef-sesame.jpg';
 
 
 import {
@@ -39,51 +46,59 @@ export default class HomeScreen extends React.Component {
         super(props);
         this.state = {
             food: 'java',
+            kindFilter: '',
             data: [
                 {
-                    name: {
-                        first: 'B1'
-                    },
+                    name: "B1",
+                    kind: '牛肉',
                     picture: {
-                        thumbnail: null
+                        thumbnail: beefBrocolli
                     },
                     quantity: 0,
                     quantityText: '0',
                     focused: false
                 },
                 {
-                    name: {
-                        first: 'B5'
-                    },
+                    name: 'B2',
+                    kind: '鸡肉',
                     picture: {
-                        thumbnail: null
+                        thumbnail: shrimpThumbnail
                     },
                     quantity: 0,
                     quantityText: '0',
                     focused: false
                 },
                 {
-                    name: {
-                        first: 'B2'
-                    },
+                    name: 'B3',
+                    kind: '猪肉',
                     picture: {
-                        thumbnail: null
+                        thumbnail: dumplingThumbnail,
                     },
                     quantity: 0,
                     quantityText: '0',
                     focused: false
                 },
                 {
-                    name: {
-                        first: 'B4'
-                    },
+                    name: 'B4',
+                    kind: '海鲜',
                     picture: {
-                        thumbnail: null
+                        thumbnail: fishThumbnail
+                    },
+                    quantity: 0,
+                    quantityText: '0',
+                    focused: false
+                },
+                {
+                    name: 'B5',
+                    kind: '牛肉',
+                    picture: {
+                        thumbnail: beefSesame
                     },
                     quantity: 0,
                     quantityText: '0',
                     focused: false
                 }
+
             ]
         };
 
@@ -96,35 +111,19 @@ export default class HomeScreen extends React.Component {
     increaseOrderQuantity(item) {
         const itemIndex = this.state.data.indexOf(item);
 
-        // this.setState(({data}) => ({
-        //     data: [
-        //         ...data.slice(0, itemIndex),
-        //         {
-        //             ...item,
-        //             quantity: item.quantity + 1
-        //         },
-        //         ...data.slice(itemIndex + 1)
-        //     ]
-        // }));
-
-        // this.setState(produce(draft => {
-        //     draft.data[itemIndex].quantity++;
-        // }));
-
-
         this.setState(produce(draft => {
             const itemToChange = draft.data[itemIndex];
 
             ++itemToChange.quantity;
             itemToChange.quantityText = itemToChange.quantity.toString();
 
-            // if (itemIndex === this.state.data.length - 1) {
-            //     console.log('end');
-            //     this.refs.flatList.scrollToEnd();
-            // }
+            this.recentlyUpdatedIndex = itemIndex;
+            if (this.recentlyUpdatedIndex === this.state.data.length - 1) {
+                this.refs.flatList.scrollToEnd();
+            }
         }));
 
-        this.recentlyUpdatedIndex = itemIndex;
+
     }
 
     decreaseOrderQuantity(item) {
@@ -183,21 +182,6 @@ export default class HomeScreen extends React.Component {
 
 
     sort() {
-        // this.setState(produce(draft => {
-        //     const data = draft.data;
-        //     // draft.data = Enumerable.from(data).orderBy('$.name.first');
-        //     draft.data = data.sort((a, b) => {
-        //         if (a.name.first > b.name.first) {
-        //             return 1;
-        //         }
-        //         else if (a.name.first < b.name.first) {
-        //             return -1;
-        //         }
-        //
-        //         return 0;
-        //     })
-        // }));
-
         const withOrdersList = [];
 
         const withOrders = this.state.data.filter(food => food.quantity > 0);
@@ -212,6 +196,10 @@ export default class HomeScreen extends React.Component {
         Clipboard.setString(ordersAsString);
     }
 
+    filterByKind(kindFilter) {
+        this.setState({kindFilter});
+    }
+
 
     render() {
         return (
@@ -223,12 +211,12 @@ export default class HomeScreen extends React.Component {
                     <FlatList
                         ref='flatList'
                         onContentSizeChange={() => {
-                                if (this.recentlyUpdatedIndex === this.state.data.length - 1) {
-                                    this.refs.flatList.scrollToEnd();
-                                }
+                            if (this.recentlyUpdatedIndex === this.state.data.length - 1) {
+                                this.refs.flatList.scrollToEnd();
                             }
-                        }
-                        data={this.state.data}
+                        }}
+                        data={this.state.data.filter(food => this.state.kindFilter === '' || food.kind === this.state.kindFilter)}
+                        keyExtractor={item => item.name}
                         renderItem={({item, index}) => (
                             <>
                                 <View
@@ -236,9 +224,11 @@ export default class HomeScreen extends React.Component {
                                         ...styles.item,
                                         backgroundColor: HomeScreen.colors[index % 2]
                                     }}
-                                    keyExtractor={item => item.name.first}
                                 >
-                                    <Text>{item.name.first}</Text>
+                                    <View style={{flexDirection: 'row'}}>
+                                        <Text style={{flex: 1}}>{item.name}</Text>
+                                        <Text style={{alignItems: 'flex-end'}}>{item.kind}</Text>
+                                    </View>
                                     {/*<Image*/}
                                     {/*source={{*/}
                                     {/*uri: "https://facebook.github.io/react-native/img/favicon.png",*/}
@@ -250,7 +240,19 @@ export default class HomeScreen extends React.Component {
                                     {/*resizeMethod='scale'*/}
                                     {/*/>*/}
 
-                                    <Image source={require('../assets/images/robot-dev.png')}/>
+                                    <View style={{alignItems: 'center'}}>
+                                        {item.picture.thumbnail ?
+                                            <Image
+                                                source={item.picture.thumbnail}
+                                                style={{
+                                                    width: 300,
+                                                    height: 240,
+                                                }}
+                                            />
+                                            :
+                                            <Image source={require('../assets/images/robot-dev.png')}/>
+                                        }
+                                    </View>
 
                                     {/*
                                         Initial quantity: 0
@@ -277,7 +279,7 @@ export default class HomeScreen extends React.Component {
                                     {(item.quantity > 0 || item.focused) &&
                                     <View>
                                         <FloatingLabelInput
-                                            label={item.name.first + " Quantity"}
+                                            label={item.name + " Quantity"}
                                             value={item.quantityText}
                                             onChangeText={text => this.changeQuantity(item, text)}
                                             onFocus={() => this.handleFocus(item)}
@@ -288,20 +290,54 @@ export default class HomeScreen extends React.Component {
                                 </View>
                             </>
                         )}
-                        keyExtractor={item => item.name.first}
                     />
                 </KeyboardAvoidingView>
 
 
-                <View style={{marginBottom: 120}}/>
+                <View style={{marginBottom: 95}}/>
 
                 <View style={styles.tabBarInfoContainer}>
-                    <Text style={styles.tabBarInfoText}>This is a tab bar. You can edit it in:</Text>
+                    {/*<Text style={styles.tabBarInfoText}>This is a tab bar. You can edit it in:</Text>*/}
 
-                    <Button title={'Copy order to clipboard'} onPress={() => this.sort()}/>
 
-                    <View style={[styles.codeHighlightContainer, styles.navigationFilename]}>
-                        <MonoText style={styles.codeHighlightText}>navigation/MainTabNavigator.js</MonoText>
+                    <View style={{flexDirection: 'row'}}>
+                        <Button
+                            title='全部'
+                            onPress={() => this.filterByKind('')}
+                        />
+                        <View style={{padding: 5}}/>
+                        <Button
+                            title='牛肉'
+                            onPress={() => this.filterByKind('牛肉')}
+                        />
+                        <View style={{padding: 5}}/>
+                        <Button
+                            title='猪肉'
+                            onPress={() => this.filterByKind('猪肉')}
+                        />
+                        <View style={{padding: 5}}/>
+                        <Button
+                            title='鸡肉'
+                            onPress={() => this.filterByKind('鸡肉')}
+                        />
+                        <View style={{padding: 5}}/>
+                        <Button
+                            title='海鲜'
+                            onPress={() => this.filterByKind('海鲜')}
+                        />
+                        <View style={{padding: 5}}/>
+                        <Button
+                            title='点心'
+                            onPress={() => this.filterByKind('点心')}
+                        />
+                    </View>
+
+                    <View style={{paddingTop: 5}}>
+                        <Button
+                            title={'Copy order to clipboard'}
+                            style={{padding: 10}}
+                            onPress={() => this.sort()}
+                        />
                     </View>
                 </View>
             </SafeAreaView>
@@ -343,113 +379,3 @@ export default class HomeScreen extends React.Component {
     };
 }
 
-const styles = StyleSheet.create({
-    safeAreaViewContainer: {
-        paddingTop: 25,
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    developmentModeText: {
-        marginBottom: 20,
-        color: 'rgba(0,0,0,0.4)',
-        fontSize: 14,
-        lineHeight: 19,
-        textAlign: 'center',
-    },
-    contentContainer: {
-        flex: 1,
-        paddingTop: 30,
-    },
-    welcomeContainer: {
-        alignItems: 'center',
-        marginTop: 10,
-        marginBottom: 20,
-    },
-    welcomeImage: {
-        width: 100,
-        height: 80,
-        resizeMode: 'contain',
-        marginTop: 3,
-        marginLeft: -10,
-    },
-    getStartedContainer: {
-        alignItems: 'center',
-        marginHorizontal: 50,
-    },
-    homeScreenFilename: {
-        marginVertical: 7,
-    },
-    codeHighlightText: {
-        color: 'rgba(96,100,109, 0.8)',
-    },
-    codeHighlightContainer: {
-        backgroundColor: 'rgba(0,0,0,0.05)',
-        borderRadius: 3,
-        paddingHorizontal: 4,
-    },
-    getStartedText: {
-        fontSize: 17,
-        color: 'rgba(96,100,109, 1)',
-        lineHeight: 24,
-        textAlign: 'center',
-    },
-    tabBarInfoContainer: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        ...Platform.select({
-            ios: {
-                shadowColor: 'black',
-                shadowOffset: {height: -3},
-                shadowOpacity: 0.1,
-                shadowRadius: 3,
-            },
-            android: {
-                elevation: 20,
-            },
-        }),
-        alignItems: 'center',
-        backgroundColor: '#fbfbfb',
-        paddingVertical: 20,
-    },
-    tabBarInfoText: {
-        fontSize: 17,
-        color: 'rgba(96,100,109, 1)',
-        textAlign: 'center',
-    },
-    navigationFilename: {
-        marginTop: 5,
-    },
-    helpContainer: {
-        marginTop: 15,
-        alignItems: 'center',
-    },
-    helpLink: {
-        paddingVertical: 15,
-    },
-    helpLinkText: {
-        fontSize: 14,
-        color: '#2e78b7',
-    },
-    item: {
-        padding: 3,
-        fontSize: 18,
-        height: null,
-    },
-    imageSize: {
-        //newWidth is the width of the device divided by 4.
-        //This is so that four images will display in each row.
-        width: 64,
-        height: 64,
-        padding: 10,
-    },
-    list: {
-        flexDirection: 'row',
-        flexWrap: 'wrap'
-    }
-});

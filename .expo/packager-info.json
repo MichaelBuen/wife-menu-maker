@@ -2,9 +2,9 @@
   "devToolsPort": 19002,
   "expoServerPort": 19000,
   "packagerPort": 19001,
-  "packagerPid": 621,
-  "expoServerNgrokUrl": "https://zf-wag.anonymous.aunt-kitchen.exp.direct",
-  "packagerNgrokUrl": "https://packager.zf-wag.anonymous.aunt-kitchen.exp.direct",
-  "ngrokPid": 649,
+  "packagerPid": 960,
+  "expoServerNgrokUrl": "https://zf-wag.kel.aunt-kitchen.exp.direct",
+  "packagerNgrokUrl": "https://packager.zf-wag.kel.aunt-kitchen.exp.direct",
+  "ngrokPid": 1002,
   "webpackServerPort": null
 }
